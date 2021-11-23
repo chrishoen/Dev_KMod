@@ -9,13 +9,12 @@
 #define  DEVICE_NAME "mydev"
 #define  CLASS_NAME  "mydevclass"
 
-dev_t devt, devt0;
-static int major;
+dev_t my_devt;
 static struct cdev my_dev;
 static struct class*  my_dev_class  = NULL;
 static struct device* my_device = NULL;
 
-static const char g_s_Hello_World_string[] = "Hello world from kernel mode!\n\0";
+static const char g_s_Hello_World_string[] = "Hello world from kernel mode 22!\n\0";
 static const ssize_t g_s_Hello_World_size = sizeof(g_s_Hello_World_string);
 
 /*==============================================================================*/
@@ -42,9 +41,9 @@ static ssize_t mydriver1_read(
     , size_t count
     , loff_t *position)
 {
-    printk( KERN_NOTICE "mydriver1: Device file is read at offset = %i, read bytes count = %u\n"
-        , (int)*position
-        , (unsigned int)count );
+    printk( KERN_NOTICE "read:  count,position  %u, %i \n",
+        (unsigned int)count,
+        (int)*position);
 
     if( *position >= g_s_Hello_World_size )
         return 0;
@@ -56,6 +55,7 @@ static ssize_t mydriver1_read(
         return -EFAULT;
 
     *position += count;
+    printk( KERN_NOTICE "read:  count  %u\n", (unsigned int)count);
     return count;
 }
 
@@ -69,7 +69,7 @@ static long mydriver1_ioctl(struct file *file, unsigned int cmd, unsigned long a
 
 /*==============================================================================*/
 
-static const struct file_operations mydriver1_fops = {
+static const struct file_operations my_fops = {
 	.owner = THIS_MODULE,
 	.read = mydriver1_read,
 	.open = mydriver1_open,
@@ -79,25 +79,28 @@ static const struct file_operations mydriver1_fops = {
 
 static int __init mydriver1_init(void)
 {
+    dev_t devtalloc;
+	int major, minor;
 	int ret;
 	pr_info("mydriver1 init**************\n");
 
 	/* Allocate dynamically device numbers */
-	ret = alloc_chrdev_region(&devt, 0, 1, DEVICE_NAME);
+	ret = alloc_chrdev_region(&devtalloc, 0, 1, DEVICE_NAME);
 	if (ret < 0){
 		pr_info("Unable to allocate major number \n");
 		return ret;
 	}
-	major = MAJOR(devt);
-	devt0 = MKDEV(major,0);
+	major = MAJOR(devtalloc);
+	minor = MINOR(devtalloc);
+	my_devt = MKDEV(major,0);
 
-	pr_info("Allocated major number %d\n", major);
+	pr_info("Allocated major,minor %d %d\n", major, minor);
 
 	/* Initialize the cdev structure and add it to the kernel space start */
-	cdev_init(&my_dev, &mydriver1_fops);
-	ret = cdev_add(&my_dev, devt0, 1);
+	cdev_init(&my_dev, &my_fops);
+	ret = cdev_add(&my_dev, my_devt, 1);
 	if (ret < 0){
-		unregister_chrdev_region(devt0, 1);
+		unregister_chrdev_region(my_devt, 1);
 		pr_info("Unable to add cdev\n");
 		return ret;
 	}
@@ -105,17 +108,17 @@ static int __init mydriver1_init(void)
 	/* Register the device class */
 	my_dev_class = class_create(THIS_MODULE, CLASS_NAME);
 	if (IS_ERR(my_dev_class)){
-		unregister_chrdev_region(devt0, 1);
+		unregister_chrdev_region(my_devt, 1);
 	    	pr_info("Failed to register device class\n");
 	    	return PTR_ERR(my_dev_class);
 	}
 	pr_info("device class registered correctly\n");
 
 	/* Create a device node */
-	my_device = device_create(my_dev_class, NULL, devt0, NULL, DEVICE_NAME);
+	my_device = device_create(my_dev_class, NULL, my_devt, NULL, DEVICE_NAME);
 	if (IS_ERR(my_device)){
 	    class_destroy(my_dev_class);
-	    unregister_chrdev_region(devt0, 1);
+	    unregister_chrdev_region(my_devt, 1);
 	    pr_info("Failed to create the device\n");
 	    return PTR_ERR(my_device);
 	}
@@ -127,10 +130,10 @@ static int __init mydriver1_init(void)
 /*==============================================================================*/
 static void __exit mydriver1_exit(void)
 {
-	device_destroy(my_dev_class, devt0);   // remove the device
+	device_destroy(my_dev_class, my_devt);   // remove the device
 	class_unregister(my_dev_class);        // unregister the device class
 	class_destroy(my_dev_class);           // remove the device class
-	unregister_chrdev_region(devt0, 1);    // unregister the device numbers
+	unregister_chrdev_region(my_devt, 1);    // unregister the device numbers
 	pr_info("mydriver1 exit\n");
 }
 

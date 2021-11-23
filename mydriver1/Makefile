@@ -19,11 +19,14 @@ clean:
 # run kernel build system to cleanup in current directory
 	$(MAKE) -C $(BUILDSYSTEM_DIR) M=$(PWD) clean
 
-load:
+start:
 	insmod ./$(TARGET_MODULE).ko
 
-unload:
+stop:
 	rmmod ./$(TARGET_MODULE).ko
 
+restart:
+	rmmod ./$(TARGET_MODULE).ko
+	insmod ./$(TARGET_MODULE).ko
 endif
 
