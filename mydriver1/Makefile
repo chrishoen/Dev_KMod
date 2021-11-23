@@ -2,7 +2,7 @@ TARGET_MODULE:=mydriver1
 
 # If we running by kernel building system
 ifneq ($(KERNELRELEASE),)
-	$(TARGET_MODULE)-objs := main.o device_file.o
+	$(TARGET_MODULE)-objs := mydriver1_mod.o
 	obj-m := $(TARGET_MODULE).o
 
 # If we are running without kernel build system
