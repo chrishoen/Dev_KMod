@@ -1,6 +1,10 @@
 # Build results
 *.o
 *.ko
-*.d
-
+*.dwo
+*.mod
+*.cmd
+*.mod.c
+*.symvers
+*.order
 

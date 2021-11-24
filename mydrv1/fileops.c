@@ -19,7 +19,7 @@ struct file *file_ptr
     , size_t count
     , loff_t *position)
 {
-       printk( KERN_NOTICE "mydrv1_read:  count,position  %u, %i \n",
+       printk( KERN_NOTICE "mydrv1: read  count,position  %u, %i \n",
        (unsigned int)count,
        (int)*position);
 
@@ -33,7 +33,7 @@ struct file *file_ptr
               return -EFAULT;
 
        *position += count;
-       printk( KERN_NOTICE "mydrv1_read:  count  %u\n", (unsigned int)count);
+       printk( KERN_NOTICE "mydrv1: read  count  %u\n", (unsigned int)count);
        return count;
 }
 
@@ -41,7 +41,7 @@ struct file *file_ptr
 
 long mydrv1_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-       pr_info("mydrv1_ioctl cmd = %d, arg = %ld\n", cmd, arg);
+       pr_info("mydrv1: ioctl cmd = %d, arg = %ld\n", cmd, arg);
 	return 0;
 }
 
