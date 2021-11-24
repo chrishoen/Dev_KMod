@@ -6,10 +6,10 @@
 #include <linux/device.h>
 
 ssize_t mydrv1_read(
-	struct file *file_ptr, 
+       struct file *file_ptr, 
 	char __user *user_buffer,
-    size_t count,
-    loff_t *position);
+       size_t count,
+       loff_t *position);
 
 long mydrv1_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 
