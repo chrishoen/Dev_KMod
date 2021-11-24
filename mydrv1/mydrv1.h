@@ -1,5 +1,5 @@
-#ifndef __LINUX_INPUT_ADXL34X_H__
-#define __LINUX_INPUT_ADXL34X_H__
+#ifndef __MYDRV1_H__
+#define __MYDRV1_H__
 
 #include <linux/compiler.h>
 #include <linux/fs.h>
