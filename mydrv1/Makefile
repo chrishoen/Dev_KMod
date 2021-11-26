@@ -1,32 +1,24 @@
+KDIR := $(HOME)/kernel/rpi/linux
+CROSS_DIR:=$(HOME)/kernel/rpi/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf-
+PWD:=$(shell pwd)
+
 TARGET_MODULE:=mydrv1
-
-# If we running by kernel building system
-ifneq ($(KERNELRELEASE),)
-	$(TARGET_MODULE)-objs := driver.o fileops.o
-	obj-m := $(TARGET_MODULE).o
-
-# If we are running without kernel build system
-else
-	BUILDSYSTEM_DIR:=/lib/modules/$(shell uname -r)/build
-	PWD:=$(shell pwd)
+$(TARGET_MODULE)-objs := driver.o fileops.o
+obj-m := $(TARGET_MODULE).o
 
 
-all : 
-# run kernel build system to make module
-	$(MAKE) -C $(BUILDSYSTEM_DIR) M=$(PWD) modules
+
+all:
+	make -C $(KDIR) \
+		ARCH=arm CROSS_COMPILE=$(CROSS_DIR) \
+		M=$(PWD) modules
 
 clean:
-# run kernel build system to cleanup in current directory
-	$(MAKE) -C $(BUILDSYSTEM_DIR) M=$(PWD) clean
+	make -C $(KDIR) \
+		ARCH=arm CROSS_COMPILE=$(CROSS_DIR) \
+		SUBDIRS=$(PWD) clean
 
-start:
-	insmod ./$(TARGET_MODULE).ko
+install:
+	scp $(TARGET_MODULE).ko pi@updev1:/opt/prime/stage
 
-stop:
-	rmmod ./$(TARGET_MODULE).ko
-
-restart:
-	rmmod ./$(TARGET_MODULE).ko
-	insmod ./$(TARGET_MODULE).ko
-endif
 
