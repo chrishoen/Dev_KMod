@@ -2,11 +2,9 @@ KDIR := $(HOME)/kernel/rpi/linux
 CROSS_DIR:=$(HOME)/kernel/rpi/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf-
 PWD:=$(shell pwd)
 
-TARGET_MODULE:=mydrv1
-$(TARGET_MODULE)-objs := driver1.o fileops1.o
+TARGET_MODULE:=mydrv2
+$(TARGET_MODULE)-objs := driver2.o
 obj-m := $(TARGET_MODULE).o
-
-
 
 all:
 	make -C $(KDIR) \
