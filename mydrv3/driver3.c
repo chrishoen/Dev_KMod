@@ -23,8 +23,6 @@ static int mydrv3_close(struct inode *inode, struct file *file)
 
 static const struct file_operations my_fops = {
 	.owner = THIS_MODULE,
-	.read = mydrv3_read,
-	.write = mydrv3_write,
 	.open = mydrv3_open,
 	.release = mydrv3_close,
 	.unlocked_ioctl = mydrv3_ioctl,
@@ -33,7 +31,7 @@ static const struct file_operations my_fops = {
 /* declare & initialize struct miscdevice */
 static struct miscdevice my_miscdevice = {
 		.minor = MISC_DYNAMIC_MINOR,
-		.name = "mydev2",
+		.name = "mydev3",
 		.fops = &my_fops,
 };
 
@@ -50,7 +48,7 @@ static int __init mydrv3_init(void)
 	gpio_direction_output(gpioA, 1);
 	gpio_export(gpioA, 0);
 
-       mydrv3_init_fileops();
+       mydrv3_init_proc();
 
 	ret_val = misc_register(&my_miscdevice);
 
