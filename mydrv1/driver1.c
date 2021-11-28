@@ -21,6 +21,7 @@ static int mydrv1_close(struct inode *inode, struct file *file)
 static const struct file_operations my_fops = {
 	.owner = THIS_MODULE,
 	.read = mydrv1_read,
+	.write = mydrv1_write,
 	.open = mydrv1_open,
 	.release = mydrv1_close,
 	.unlocked_ioctl = mydrv1_ioctl,
@@ -36,7 +37,9 @@ static struct miscdevice my_miscdevice = {
 static int __init mydrv1_init(void)
 {
 	int ret_val;
-	pr_info("mydrv1: init\n");
+	pr_info("mydrv1: init\n****************************************");
+
+       mydrv1_init_fileops();
 
 	/* Register the device with the Kernel */
 	ret_val = misc_register(&my_miscdevice);

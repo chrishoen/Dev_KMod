@@ -9,32 +9,57 @@
 
 /*==============================================================================*/
 
-static const char g_s_Hello_World_string[] = "Hello world from kernel mode 22!\n\0";
-static const ssize_t g_s_Hello_World_size = sizeof(g_s_Hello_World_string);
+static const ssize_t my_buffer_maxsize = 256;
+static char my_buffer[256];
+static ssize_t my_buffer_size = 0;
 
 /*==============================================================================*/
 
-ssize_t mydrv1_read(
-       struct file *file_ptr,
-       char __user *user_buffer,
-       size_t count,
-       loff_t *position)
+void mydrv1_init_fileops(void)
 {
-       printk( KERN_NOTICE "mydrv1: read  count,position  %u, %i \n",
-       (unsigned int)count,
-       (int)*position);
+       strcpy(my_buffer,"mydrv1 file_buffer **************************\n");
+       my_buffer_size = strlen(my_buffer);
+}
 
-       if( *position >= g_s_Hello_World_size )
+/*==============================================================================*/
+
+ssize_t mydrv1_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+{
+       pr_info("mydrv1: read  count,ppos  %u, %i \n", (unsigned int)count, (int)*ppos);
+
+       if( *ppos >= my_buffer_size ){
+              pr_info("mydrv1: read  count  empty\n");
               return 0;
+       }
 
-       if( *position + count > g_s_Hello_World_size )
-              count = g_s_Hello_World_size - *position;
+       if( *ppos + count > my_buffer_size )
+              count = my_buffer_size - *ppos;
 
-       if( copy_to_user(user_buffer, g_s_Hello_World_string + *position, count) != 0 )
+       if( copy_to_user((void*)buf, (const void*)my_buffer + *ppos, count) != 0 )
               return -EFAULT;
 
-       *position += count;
-       printk( KERN_NOTICE "mydrv1: read  count  %u\n", (unsigned int)count);
+       *ppos += count;
+       pr_info("mydrv1: read  count  %u\n", (unsigned int)count);
+       return count;
+}
+
+/*==============================================================================*/
+
+ssize_t mydrv1_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+{
+       pr_info( "mydrv1: write  count,ppos  %u, %i \n", (unsigned int)count, (int)*ppos);
+
+       if( count >= my_buffer_maxsize ){
+              pr_err("mydrv1: write FAIL 101\n");
+              return -EINVAL;
+       }
+
+       if( copy_from_user((void*)my_buffer, (void*)buf, count) != 0 )
+              return -EFAULT;
+
+       my_buffer_size = count;
+
+       pr_info("mydrv1: write count  %u\n", (unsigned int)count);
        return count;
 }
 
