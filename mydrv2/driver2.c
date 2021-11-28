@@ -1,4 +1,3 @@
-
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/platform_device.h>
@@ -7,127 +6,74 @@
 #include <linux/uaccess.h>
 #include <linux/gpio.h>
 
-static const unsigned int gpioA = 5;
-static bool my_stateA;
 
-static ssize_t mydrv2_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
-{
-	char *led_on = "on"; 
-	char *led_off = "off"; 
-	unsigned char myled_value[10]; 
-
-	if(copy_from_user(myled_value, buf, count)){
-	       pr_info("mydrv2: write error\n");
-		return -EFAULT;
-	}
-
-	if(strncmp(led_on, myled_value, count) == 0)
-	{
-		my_stateA = 1;
-		gpio_set_value(gpioA, my_stateA);
-	}
-	else if(strncmp(led_off, myled_value, count) == 0)
-	{
-		my_stateA = 0;
-		gpio_set_value(gpioA, my_stateA);
-	}
-	else {
-              pr_info("mydrv2: write error 102\n");
-		return -EINVAL;
-	}
-       pr_info("mydrv2: write %d\n", my_stateA);
-
-	return 0;
-}
+#include "mydrv2.h"
 
 static int mydrv2_open(struct inode *inode, struct file *file)
 {
-	pr_info("mydrv2: mydrv2_open() is called.\n");
+	pr_info("mydrv2: open\n");
 	return 0;
 }
 
 static int mydrv2_close(struct inode *inode, struct file *file)
 {
-	pr_info("mydrv2: mydrv2_close() is called.\n");
+	pr_info("mydrv2: close\n");
 	return 0;
 }
 
-static long mydrv2_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-{
-	pr_info("mydrv2: mydrv2_ioctl() is called. cmd = %d, arg = %ld\n", cmd, arg);
-	return 0;
-}
-
-static const struct file_operations mydrv2_fops = {
+static const struct file_operations my_fops = {
 	.owner = THIS_MODULE,
-	.open = mydrv2_open,
+	.read = mydrv2_read,
 	.write = mydrv2_write,
+	.open = mydrv2_open,
 	.release = mydrv2_close,
 	.unlocked_ioctl = mydrv2_ioctl,
 };
 
-static struct miscdevice mydev = {
+/* declare & initialize struct miscdevice */
+static struct miscdevice my_miscdevice = {
 		.minor = MISC_DYNAMIC_MINOR,
-		.name = "mydev",
-		.fops = &mydrv2_fops,
+		.name = "mydev2",
+		.fops = &my_fops,
 };
 
-static int mydrv2_probe(struct platform_device *pdev)
+static int __init mydrv2_init(void)
 {
 	int ret_val;
-	pr_info("mydrv2: platform_probe enter\n");
-	
+	pr_info("mydrv2: init****************************************\n");
+
 	if(!gpio_is_valid(gpioA)){
-		pr_info("mydrv2: Invalid led GPIO");
+		pr_info("mydrv2: init: Invalid GPIO");
 		return -ENODEV;
 	}
-
 	gpio_request(gpioA, "sysfs");
 	gpio_direction_output(gpioA, 1);
 	gpio_export(gpioA, 0);
 
-	ret_val = misc_register(&mydev);
-	if (ret_val != 0)
-	{
-		pr_err("mydrv2: register FAIL");
+       mydrv2_init_fileops();
+
+	ret_val = misc_register(&my_miscdevice);
+
+	if (ret_val != 0) {
+		pr_err("mydrv2: could not register the misc device mydev1");
 		return ret_val;
 	}
 
-	pr_info("mydrv2: probe %i\n",mydev.minor);
+	pr_info("mydrv2: my_miscdevice.minor %i\n",my_miscdevice.minor);
 	return 0;
 }
-
-static int mydrv2_remove(struct platform_device *pdev)
+static void __exit mydrv2_exit(void)
 {
-	gpio_unexport(gpioA);
-	misc_deregister(&mydev);
+	pr_info("mydrv2: exit\n");
 
-	pr_info("mydrv2: remove\n");
-	return 0;
+	gpio_unexport(gpioA);
+	misc_deregister(&my_miscdevice);
 }
 
-static const struct of_device_id my_of_ids[] = {
-	{ .compatible = "arrow,intkey"},
-	{},
-};
-
-MODULE_DEVICE_TABLE(of, my_of_ids);
-
-static struct platform_driver my_platform_driver = {
-	.probe = mydrv2_probe,
-	.remove = mydrv2_remove,
-	.driver = {
-		.name = "intkey",
-		.of_match_table = my_of_ids,
-		.owner = THIS_MODULE,
-	}
-};
-
-module_platform_driver(my_platform_driver);
+module_init(mydrv2_init);
+module_exit(mydrv2_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("");
-MODULE_DESCRIPTION("This is a platform driver that controls the LED using a sysfs and an user application. It also manages GPIO interrupts");
-
-
+MODULE_AUTHOR("chrishoen");
+MODULE_DESCRIPTION("misc char driver with gpio");
 
