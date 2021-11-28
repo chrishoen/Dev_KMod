@@ -8,7 +8,7 @@
 void mydrv2_init_fileops(void);
 ssize_t mydrv2_read(struct file *file, char __user *buf, size_t count, loff_t *ppos);
 ssize_t mydrv2_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos);
-long mydrv2_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
+long mydrv2_ioctl(struct file *file, unsigned int cmd, void __user *arg);
 
 static const unsigned int gpioA = 5;
 

@@ -10,6 +10,7 @@ all:
 	make -C $(KDIR) \
 		ARCH=arm CROSS_COMPILE=$(CROSS_DIR) \
 		M=$(PWD) modules
+	scp $(TARGET_MODULE).ko pi@updev1:/opt/prime/stage
 
 clean:
 	make -C $(KDIR) \

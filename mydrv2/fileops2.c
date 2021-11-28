@@ -10,6 +10,7 @@
 
 /*==============================================================================*/
 
+static bool prn = false;
 static bool my_stateA;
 
 /*==============================================================================*/
@@ -27,10 +28,10 @@ ssize_t mydrv2_read(struct file *file, char __user *userbuffer, size_t count, lo
        char buffer[10];
        char size = 3;
 
-       pr_info("mydrv2: read  count,ppos  %u, %i \n", (unsigned int)count, (int)*ppos);
+       if(prn) pr_info("mydrv2: read  count,ppos  %u, %i \n", (unsigned int)count, (int)*ppos);
 
        if( *ppos >= size ){
-              pr_info("mydrv2: read  count  empty\n");
+              if(prn) pr_info("mydrv2: read  count  empty\n");
               return 0;
        }
 
@@ -46,7 +47,7 @@ ssize_t mydrv2_read(struct file *file, char __user *userbuffer, size_t count, lo
               return -EFAULT;
 
        *ppos += count;
-       pr_info("mydrv2: read  count  %u\n", (unsigned int)count);
+       if(prn) pr_info("mydrv2: read  count  %u\n", (unsigned int)count);
        return count;
 }
 
@@ -60,7 +61,7 @@ ssize_t mydrv2_write(struct file *file, const char __user *userbuffer, size_t co
        // pr_info( "mydrv2: write  count,ppos  %u, %i \n", (unsigned int)count, (int)*ppos);
 
        if( count != size ){
-              pr_err("mydrv2: write FAIL 101 %d\n", count);
+              if (prn) pr_err("mydrv2: write FAIL 101 %d\n", count);
               return -EINVAL;
        }
 
@@ -78,21 +79,63 @@ ssize_t mydrv2_write(struct file *file, const char __user *userbuffer, size_t co
 		gpio_set_value(gpioA, my_stateA);
 	}
 	else {
-              pr_info("mydrv2: write error 102\n");
+              if (prn) pr_err("mydrv2: write FAIL 102\n");
 		return -EINVAL;
 	}
-       pr_info("mydrv2: write %d\n", my_stateA);
+       if(prn) pr_info("mydrv2: write %d\n", my_stateA);
 
-       if (buffer[0] == '1')
-       pr_info("mydrv2: write count  %u\n", (unsigned int)count);
+       if(prn) pr_info("mydrv2: write count  %u\n", (unsigned int)count);
        return count;
 }
 
-/*==============================================================================*/
+/********************************************************************************/
+/********************************************************************************/
+/********************************************************************************/
 
-long mydrv2_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+long mydrv2_ioctl(struct file *file, unsigned int cmd, void __user *arg)
 {
-       pr_info("mydrv2: ioctl cmd = %d, arg = %ld\n", cmd, arg);
+       int value = 0;
+
+       if (prn) pr_info("mydrv2: ioctl cmd = %d\n", cmd);
+
+       /*************************************************************************/
+       if (cmd == 101){
+              if(copy_from_user((void*)&value, (void*)arg, sizeof(int)) != 0){
+                     if (prn) pr_err("mydrv2: ioctl FAIL 101\n");
+                     return -EFAULT;
+              }
+
+              if (prn) pr_info("mydrv2: value = %d\n", value);
+              
+              if(value == 0){
+                     my_stateA = 0;
+                     gpio_set_value(gpioA, my_stateA);
+              }
+              else if(value == 1){
+                     my_stateA = 1;
+                     gpio_set_value(gpioA, my_stateA);
+              }
+              else {
+                     if (prn) pr_err("mydrv2: ioctl FAIL 102\n");
+                     return -EINVAL;
+              }
+       }
+
+       /*************************************************************************/
+       if (cmd == 201){
+              if(copy_from_user((void*)&value, (void*)arg, sizeof(int)) != 0){
+                     if (prn) pr_err("mydrv2: ioctl FAIL 101\n");
+                     return -EFAULT;
+              }
+
+              value++;
+
+              if(copy_to_user((void*)arg, (void*)&value, sizeof(int)) != 0){
+                     if (prn) pr_err("mydrv2: ioctl FAIL 102\n");
+                     return -EFAULT;
+              }
+       }
+
 	return 0;
 }
 
