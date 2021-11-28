@@ -25,7 +25,7 @@ void mydrv2_init_fileops(void)
 ssize_t mydrv2_read(struct file *file, char __user *userbuffer, size_t count, loff_t *ppos)
 {
        char buffer[10];
-       char size = 2;
+       char size = 3;
 
        pr_info("mydrv2: read  count,ppos  %u, %i \n", (unsigned int)count, (int)*ppos);
 
@@ -35,13 +35,13 @@ ssize_t mydrv2_read(struct file *file, char __user *userbuffer, size_t count, lo
        }
 
        if (my_stateA)
-              strcpy(buffer, "1");
+              strcpy(buffer, "1\n");
        else
-              strcpy(buffer, "0");
+              strcpy(buffer, "0\n");
 
        if( *ppos + count > size )
               count = size - *ppos;
-
+       
        if( copy_to_user((void*)userbuffer, (const void*)buffer + *ppos, count) != 0 )
               return -EFAULT;
 

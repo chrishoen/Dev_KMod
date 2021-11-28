@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/home/main/kernel/preempt_rt/**"
+                "/home/main/kernel/rpi/linux/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
