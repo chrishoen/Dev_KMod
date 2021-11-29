@@ -49,6 +49,7 @@ static int __init mydrv3_init(void)
 	gpio_export(gpioA, 0);
 
        mydrv3_init_proc();
+       mydrv3_open_gpio();
 
 	ret_val = misc_register(&my_miscdevice);
 
@@ -63,6 +64,8 @@ static int __init mydrv3_init(void)
 static void __exit mydrv3_exit(void)
 {
 	pr_info("mydrv3: exit\n");
+
+       mydrv3_release_gpio();
 
 	gpio_unexport(gpioA);
 	misc_deregister(&my_miscdevice);

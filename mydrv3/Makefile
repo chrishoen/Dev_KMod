@@ -3,7 +3,7 @@ CROSS_DIR:=$(HOME)/kernel/rpi/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-r
 PWD:=$(shell pwd)
 
 TARGET_MODULE:=mydrv3
-$(TARGET_MODULE)-objs := driver3.o proc3.o
+$(TARGET_MODULE)-objs := driver3.o proc3.o gpio3.o
 obj-m := $(TARGET_MODULE).o
 
 all:
