@@ -9,15 +9,6 @@
 
 #include "mydrv3.h"
 
-static char *MYDRV_NAME = "MYDRV";
-#if 0
-/* interrupt handler */
-static irqreturn_t mydrv3_isr(int irq, void *data)
-{
-	pr_info("mydrv3: interrupt received\n");
-	return IRQ_HANDLED;
-}
-#endif
 static int mydrv3_open(struct inode *inode, struct file *file)
 {
 	pr_info("mydrv3: open\n");
@@ -44,8 +35,6 @@ static struct miscdevice my_miscdevice = {
 		.fops = &my_fops,
 };
 
-static int irq;
-
 static int __init mydrv3_init(void)
 {
 	int ret_val;
@@ -67,19 +56,12 @@ static int __init mydrv3_init(void)
 	}
 	pr_info("mydrv3: my_miscdevice.minor %i\n",my_miscdevice.minor);
 
-	irq = gpio_to_irq(6);
-	if (irq < 0) {
-		pr_err("mydrv3: init: gpio_to_irq FAIL\n");
-		return irq;
-	}
-	pr_info("mydrv3: irq %d\n",irq);
-
-       ret_val =  request_irq(irq, mydrv3_isr, 
-                     IRQF_TRIGGER_FALLING, MYDRV_NAME, &my_miscdevice);
+	ret_val = mydrv3_init_isr(&my_miscdevice);
 	if (ret_val != 0) {
-		pr_err("mydrv3: init: request irq FAIL\n");
+		pr_err("mydrv3: init: isr FAIL\n");
 		return ret_val;
 	}
+
 	return 0;
 }
 
@@ -87,7 +69,7 @@ static void __exit mydrv3_exit(void)
 {
 	pr_info("mydrv3: exit\n");
 
-       free_irq(irq, &my_miscdevice);
+	mydrv3_exit_isr(&my_miscdevice);
 
        mydrv3_exit_gpio();
 

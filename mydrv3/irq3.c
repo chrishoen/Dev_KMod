@@ -28,26 +28,25 @@ int mydrv3_init_isr(struct miscdevice *device)
        int ret_val;
 
 	if(!gpio_is_valid(gpio6)){
-		pr_info("mydrv3: mydrv3_init_gpio gpio6 FAIL");
+		pr_info("mydrv3: gpio_is_valid FAIL");
 		return -ENODEV;
 	}
 
 	irq = gpio_to_irq(gpio6);
 	if (irq < 0) {
-		pr_err("mydrv3: init: gpio FAIL\n");
-		pr_err("mydrv3: init: gpio_to_irq FAIL\n");
+		pr_info("mydrv3: gpio_to_irq FAIL");
 		return irq;
 	}
 	pr_info("mydrv3: irq %d\n",irq);
 
        ret_val =  request_irq(
-                     irq, 
-                     mydrv3_isr, 
-                     IRQF_TRIGGER_FALLING, 
-                     MYDEV_NAME, 
-                     &device);
+              irq,
+              mydrv3_isr,
+              IRQF_TRIGGER_FALLING,
+              MYDEV_NAME,
+              device);
 	if (ret_val != 0) {
-		pr_err("mydrv3: init: request irq FAIL\n");
+		pr_err("mydrv3: init: request_irq FAIL\n");
 		return ret_val;
 	}
 
