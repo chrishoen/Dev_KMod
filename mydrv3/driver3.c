@@ -4,8 +4,6 @@
 #include <linux/miscdevice.h>
 #include <linux/delay.h>
 #include <linux/uaccess.h>
-#include <linux/gpio.h>
-
 
 #include "mydrv3.h"
 
@@ -40,34 +38,30 @@ static int __init mydrv3_init(void)
 	int ret_val;
 	pr_info("mydrv3: init****************************************\n");
 
-	if(!gpio_is_valid(gpioA)){
-		pr_info("mydrv3: init: Invalid GPIO");
-		return -ENODEV;
+	ret_val = mydrv3_init_gpio();
+	if (ret_val != 0) {
+		pr_err("mydrv3: init: gpio FAIL");
+		return ret_val;
 	}
-	gpio_request(gpioA, "sysfs");
-	gpio_direction_output(gpioA, 1);
-	gpio_export(gpioA, 0);
 
        mydrv3_init_proc();
-       mydrv3_open_gpio();
 
 	ret_val = misc_register(&my_miscdevice);
-
 	if (ret_val != 0) {
-		pr_err("mydrv3: could not register the misc device mydev1");
+		pr_err("mydrv3: init: could not register the misc device");
 		return ret_val;
 	}
 
 	pr_info("mydrv3: my_miscdevice.minor %i\n",my_miscdevice.minor);
 	return 0;
 }
+
 static void __exit mydrv3_exit(void)
 {
 	pr_info("mydrv3: exit\n");
 
-       mydrv3_release_gpio();
+       mydrv3_exit_gpio();
 
-	gpio_unexport(gpioA);
 	misc_deregister(&my_miscdevice);
 }
 

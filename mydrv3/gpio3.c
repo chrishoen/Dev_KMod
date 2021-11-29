@@ -4,6 +4,9 @@
 #include <linux/types.h>
 #include <linux/io.h>
 #include <linux/uaccess.h>
+#include <linux/gpio.h>
+
+#include "mydrv3.h"
 
 /********************************************************************************/
 /********************************************************************************/
@@ -12,23 +15,14 @@
 /* GPIO controller: FE200000 */
 #define BCM2710_PERI_BASE		0xfe000000
 #define GPIO_BASE			BCM2710_PERI_BASE + 0x200000
-#define GPFSEL0                    GPIO_BASE + 0x00
 #define GPSET0   	              GPIO_BASE + 0x1C
 #define GPCLR0 		       GPIO_BASE + 0x28
 
-#define GPIO_5			5
-
-/* to set and clear the bit */
+/* used to set and clear the bit */
+#define GPIO_5		5
 #define GPIO_5_BIT    	1 << (GPIO_5 % 32)
 
-/* function select for output*/
-#define GPIO_5_FUNC	       0b001 << ((GPIO_5 % 10) * 3)
-
-/* function select mask */
-#define FSEL_5_MASK 	       0b111 << ((GPIO_5 % 10) * 3)
-
-/* Declare __iomem pointers that will keep virtual addresses */
-static void __iomem *GPFSEL0_V;
+/* virtual addresses */
 static void __iomem *GPSET0_V;
 static void __iomem *GPCLR0_V;
 
@@ -36,41 +30,40 @@ static void __iomem *GPCLR0_V;
 /********************************************************************************/
 /********************************************************************************/
 
-void mydrv3_open_gpio(void)
+int mydrv3_init_gpio(void)
 {
-	u32 GPFSEL_read, GPFSEL_write;
-	pr_info("demo_init enter\n");
+       /* sysfs gpio 5 */
+	if(!gpio_is_valid(GPIO_5)){
+		pr_info("mydrv3: mydrv3_init_gpio FAIL");
+		return -ENODEV;
+	}
 
+       /* sysfs gpio 5 as output */
+	gpio_request(GPIO_5, "sysfs");
+	gpio_direction_output(GPIO_5, 0);
+	gpio_export(GPIO_5, 0);
 
        /* map physical addresses */
-	GPFSEL0_V = ioremap(GPFSEL0, sizeof(u32));
 	GPSET0_V =  ioremap(GPSET0, sizeof(u32));
 	GPCLR0_V =  ioremap(GPCLR0, sizeof(u32));
 
-       /* read current function select register */
-	GPFSEL_read = ioread32(GPFSEL0_V);
-
-       /* do a masked or with the function bits for gpio 5*/
-	GPFSEL_write = (GPFSEL_read & ~FSEL_5_MASK) | GPIO_5_FUNC;
-
-       /* write the new function select register */
-	iowrite32(GPFSEL_write, GPFSEL0_V);
-
        /* clear gpio 5 */
 	iowrite32(GPIO_5_BIT, GPCLR0_V);
+
+       return 0;
 }
 
 /********************************************************************************/
 /********************************************************************************/
 /********************************************************************************/
 
-void mydrv3_release_gpio(void)
+void mydrv3_exit_gpio(void)
 {
-       /* clear gpio 5 */
-	iowrite32(GPIO_5_BIT, GPCLR0_V);
+       /* sysfs gpio 5 */
+	gpio_direction_input(GPIO_5);
+	gpio_unexport(GPIO_5);
 
        /* unmap physical addresses */
-	iounmap(GPFSEL0_V);
 	iounmap(GPSET0_V);
 	iounmap(GPCLR0_V);
 }
@@ -90,3 +83,6 @@ void mydrv3_write_gpio_5(bool value)
 	}
 }
 
+/********************************************************************************/
+/********************************************************************************/
+/********************************************************************************/
