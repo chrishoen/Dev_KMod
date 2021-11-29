@@ -21,6 +21,7 @@
 /* used to set and clear the bit */
 #define GPIO_5		5
 #define GPIO_5_BIT    	1 << (GPIO_5 % 32)
+#define GPIO_6		6
 
 /* virtual addresses */
 static void __iomem *GPSET0_V;
@@ -34,7 +35,11 @@ int mydrv3_init_gpio(void)
 {
        /* sysfs gpio 5 */
 	if(!gpio_is_valid(GPIO_5)){
-		pr_info("mydrv3: mydrv3_init_gpio FAIL");
+		pr_info("mydrv3: mydrv3_init_gpio gpio5 FAIL");
+		return -ENODEV;
+	}
+	if(!gpio_is_valid(GPIO_6)){
+		pr_info("mydrv3: mydrv3_init_gpio gpio6 FAIL");
 		return -ENODEV;
 	}
 
@@ -42,7 +47,12 @@ int mydrv3_init_gpio(void)
 	gpio_request(GPIO_5, "sysfs");
 	gpio_direction_output(GPIO_5, 0);
 	gpio_export(GPIO_5, 0);
-
+#if 0
+       /* sysfs gpio 6 as input */
+	gpio_request(GPIO_6, "sysfs");
+	gpio_direction_input(GPIO_6);
+	gpio_export(GPIO_6, 0);
+#endif
        /* map physical addresses */
 	GPSET0_V =  ioremap(GPSET0, sizeof(u32));
 	GPCLR0_V =  ioremap(GPCLR0, sizeof(u32));
@@ -62,7 +72,10 @@ void mydrv3_exit_gpio(void)
        /* sysfs gpio 5 */
 	gpio_direction_input(GPIO_5);
 	gpio_unexport(GPIO_5);
-
+#if 0
+       /* sysfs gpio 6 */
+	gpio_unexport(GPIO_6);
+#endif
        /* unmap physical addresses */
 	iounmap(GPSET0_V);
 	iounmap(GPCLR0_V);
