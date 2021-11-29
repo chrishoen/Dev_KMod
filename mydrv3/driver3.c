@@ -62,18 +62,20 @@ static int __init mydrv3_init(void)
 		return ret_val;
 	}
 
+	pr_info("mydrv3: init PASS\n");
 	return 0;
 }
 
 static void __exit mydrv3_exit(void)
 {
-	pr_info("mydrv3: exit\n");
+	pr_info("mydrv3: exit********************************\n");
 
 	mydrv3_exit_isr(&my_miscdevice);
-
+       mydrv3_exit_proc();
        mydrv3_exit_gpio();
-
 	misc_deregister(&my_miscdevice);
+
+	pr_info("mydrv3: exit PASS\n");
 }
 
 module_init(mydrv3_init);

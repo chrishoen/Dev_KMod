@@ -8,6 +8,7 @@
 #include <linux/interrupt.h>
 
 void mydrv3_init_proc(void);
+void mydrv3_exit_proc(void);
 long mydrv3_ioctl(struct file *file, unsigned int cmd, void __user *arg);
 
 int mydrv3_init_gpio(void);

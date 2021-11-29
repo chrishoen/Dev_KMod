@@ -20,7 +20,7 @@ static bool prn = false;
 
 void mydrv3_init_proc(void)
 {
-	pr_info("mydrv3: mydrv3_init_proc PASS");
+	pr_info("mydrv3: mydrv3_init_proc PASS\n");
 }
 
 /********************************************************************************/
@@ -29,7 +29,7 @@ void mydrv3_init_proc(void)
 
 void mydrv3_exit_proc(void)
 {
-	pr_info("mydrv3: mydrv3_exit_proc PASS");
+	pr_info("mydrv3: mydrv3_exit_proc PASS\n");
 }
 
 /********************************************************************************/

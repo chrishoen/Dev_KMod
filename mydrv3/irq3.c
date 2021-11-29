@@ -50,7 +50,7 @@ int mydrv3_init_isr(struct miscdevice *device)
 		return ret_val;
 	}
 
-	pr_info("mydrv3: mydrv3_init_isr  PASS");
+	pr_info("mydrv3: mydrv3_init_isr  PASS\n");
 	return 0;
 }
 
@@ -61,12 +61,12 @@ int mydrv3_init_isr(struct miscdevice *device)
 void mydrv3_exit_isr(struct miscdevice *device)
 {
        if (irq < 0){
-       	pr_info("mydrv3: mydrv3_exit_isr  NOP");
+       	pr_info("mydrv3: mydrv3_exit_isr  NOP\n");
               return;
        }
 
        free_irq(irq, device);
-	pr_info("mydrv3: mydrv3_exit_isr  PASS");
+	pr_info("mydrv3: mydrv3_exit_isr  PASS\n");
 }
 
 /********************************************************************************/

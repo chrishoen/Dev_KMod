@@ -34,7 +34,7 @@ int mydrv3_init_gpio(void)
 {
        /* sysfs gpio 5 */
 	if(!gpio_is_valid(GPIO_5)){
-		pr_info("mydrv3: mydrv3_init_gpio gpio5 FAIL");
+		pr_info("mydrv3: mydrv3_init_gpio gpio5 FAIL\n");
 		return -ENODEV;
 	}
 
@@ -50,7 +50,7 @@ int mydrv3_init_gpio(void)
        /* clear gpio 5 */
 	iowrite32(GPIO_5_BIT, GPCLR0_V);
 
-	pr_info("mydrv3: mydrv3_init_gpio PASS");
+	pr_info("mydrv3: mydrv3_init_gpio PASS\n");
        return 0;
 }
 
@@ -68,7 +68,7 @@ void mydrv3_exit_gpio(void)
 	iounmap(GPSET0_V);
 	iounmap(GPCLR0_V);
 
-	pr_info("mydrv3: mydrv3_exit_gpio PASS");
+	pr_info("mydrv3: mydrv3_exit_gpio PASS\n");
 }
 
 /********************************************************************************/
