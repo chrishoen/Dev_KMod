@@ -1,10 +1,11 @@
 
 #include <linux/module.h>
 #include <linux/fs.h>
-#include <linux/types.h>
-#include <linux/io.h>
+#include <linux/device.h>
+#include <linux/cdev.h>
 #include <linux/uaccess.h>
 #include <linux/gpio.h>
+#include <linux/interrupt.h>
 
 #include "mydrv3.h"
 
@@ -12,78 +13,71 @@
 /********************************************************************************/
 /********************************************************************************/
 
-/* GPIO controller: FE200000 */
-#define BCM2710_PERI_BASE		0xfe000000
-#define GPIO_BASE			BCM2710_PERI_BASE + 0x200000
-#define GPSET0   	              GPIO_BASE + 0x1C
-#define GPCLR0 		       GPIO_BASE + 0x28
+static const char* MYDEV_NAME = "mydev3";
 
-/* used to set and clear the bit */
-#define GPIO_5		5
-#define GPIO_5_BIT    	1 << (GPIO_5 % 32)
-
-/* virtual addresses */
-static void __iomem *GPSET0_V;
-static void __iomem *GPCLR0_V;
+static bool prn = true;
+static int gpio6 = 6;
+static int irq = -1;
 
 /********************************************************************************/
 /********************************************************************************/
 /********************************************************************************/
 
-int mydrv3_init_gpio(void)
+int mydrv3_init_isr(struct miscdevice *device)
 {
-       /* sysfs gpio 5 */
-	if(!gpio_is_valid(GPIO_5)){
-		pr_info("mydrv3: mydrv3_init_gpio gpio5 FAIL");
+       int ret_val;
+
+	if(!gpio_is_valid(gpio6)){
+		pr_info("mydrv3: mydrv3_init_gpio gpio6 FAIL");
 		return -ENODEV;
 	}
 
-       /* sysfs gpio 5 as output */
-	gpio_request(GPIO_5, "sysfs");
-	gpio_direction_output(GPIO_5, 0);
-	gpio_export(GPIO_5, 0);
+	irq = gpio_to_irq(gpio6);
+	if (irq < 0) {
+		pr_err("mydrv3: init: gpio FAIL\n");
+		pr_err("mydrv3: init: gpio_to_irq FAIL\n");
+		return irq;
+	}
+	pr_info("mydrv3: irq %d\n",irq);
 
-       /* map physical addresses */
-	GPSET0_V =  ioremap(GPSET0, sizeof(u32));
-	GPCLR0_V =  ioremap(GPCLR0, sizeof(u32));
+       ret_val =  request_irq(
+                     irq, 
+                     mydrv3_isr, 
+                     IRQF_TRIGGER_FALLING, 
+                     MYDEV_NAME, 
+                     &device);
+	if (ret_val != 0) {
+		pr_err("mydrv3: init: request irq FAIL\n");
+		return ret_val;
+	}
 
-       /* clear gpio 5 */
-	iowrite32(GPIO_5_BIT, GPCLR0_V);
-
-	pr_info("mydrv3: mydrv3_init_gpio PASS");
-       return 0;
+	pr_info("mydrv3: mydrv3_init_isr  PASS");
+	return 0;
 }
 
 /********************************************************************************/
 /********************************************************************************/
 /********************************************************************************/
 
-void mydrv3_exit_gpio(void)
+void mydrv3_exit_isr(struct miscdevice *device)
 {
-       /* sysfs gpio 5 */
-	gpio_direction_input(GPIO_5);
-	gpio_unexport(GPIO_5);
+       if (irq < 0){
+       	pr_info("mydrv3: mydrv3_exit_isr  NOP");
+              return;
+       }
 
-       /* unmap physical addresses */
-	iounmap(GPSET0_V);
-	iounmap(GPCLR0_V);
-
-	pr_info("mydrv3: mydrv3_exit_gpio PASS");
+       free_irq(irq, device);
+	pr_info("mydrv3: mydrv3_exit_isr  PASS");
 }
 
 /********************************************************************************/
 /********************************************************************************/
 /********************************************************************************/
 
-void mydrv3_write_gpio_5(bool value)
+irqreturn_t mydrv3_isr(int irq, void *data)
 {
-       /* set or clear gpio 5*/
-	if(value) {
-		iowrite32(GPIO_5_BIT, GPSET0_V);
-	}
-	else{
-		iowrite32(GPIO_5_BIT, GPCLR0_V);
-	}
+	if(prn) pr_info("mydrv3: interrupt received\n");
+	return IRQ_HANDLED;
 }
 
 /********************************************************************************/

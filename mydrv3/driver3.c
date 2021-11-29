@@ -10,14 +10,14 @@
 #include "mydrv3.h"
 
 static char *MYDRV_NAME = "MYDRV";
-
+#if 0
 /* interrupt handler */
 static irqreturn_t mydrv3_isr(int irq, void *data)
 {
 	pr_info("mydrv3: interrupt received\n");
 	return IRQ_HANDLED;
 }
-
+#endif
 static int mydrv3_open(struct inode *inode, struct file *file)
 {
 	pr_info("mydrv3: open\n");
