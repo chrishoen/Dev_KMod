@@ -6,6 +6,7 @@
 #include <linux/uaccess.h>
 #include <linux/gpio.h>
 
+#include "cmn3.h"
 #include "mydrv3.h"
 
 /********************************************************************************/
@@ -60,6 +61,14 @@ long mydrv3_ioctl(struct file *file, unsigned int cmd, void __user *arg)
               else {
                      if (prn) pr_err("mydrv3: ioctl FAIL 102\n");
                      return -EINVAL;
+              }
+       }
+
+       /*************************************************************************/
+       if (cmd == 102){
+              if(copy_to_user((void*)arg, (void*)&cmn.count1, sizeof(int)) != 0){
+                     if (prn) pr_err("mydrv3: ioctl FAIL 201\n");
+                     return -EFAULT;
               }
        }
 

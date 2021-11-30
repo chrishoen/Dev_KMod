@@ -16,7 +16,7 @@
 
 static const char* MYDEV_NAME = "mydev3";
 
-static bool prn = true;
+static bool prn = false;
 static int gpio6 = 6;
 static int irq = -1;
 static int cookie = 0;
