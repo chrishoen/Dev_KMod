@@ -44,7 +44,7 @@ int mydrv3_init_isr(void)
        ret_val =  request_irq(
               irq,
               mydrv3_isr,
-              IRQF_TRIGGER_FALLING,
+              IRQF_TRIGGER_RISING,
               MYDEV_NAME,
               &cookie);
 	if (ret_val != 0) {
