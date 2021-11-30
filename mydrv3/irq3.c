@@ -7,6 +7,7 @@
 #include <linux/gpio.h>
 #include <linux/interrupt.h>
 
+#include "cmn3.h"
 #include "mydrv3.h"
 
 /********************************************************************************/
@@ -79,8 +80,10 @@ irqreturn_t mydrv3_isr(int irq, void *data)
 {
        int* pdata = (int*)data;
        count++;
+       cmn.count1++;
        (*pdata)++;
-	if(prn) pr_info("mydrv3: interrupt received %d %d\n", *pdata, count);
+	if(prn) pr_info("mydrv3: interrupt received %d %d %d\n",
+              *pdata, count, cmn.count1);
 	return IRQ_HANDLED;
 }
 
