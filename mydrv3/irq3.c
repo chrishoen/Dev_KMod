@@ -18,6 +18,8 @@ static const char* MYDEV_NAME = "mydev3";
 static bool prn = true;
 static int gpio6 = 6;
 static int irq = -1;
+static int cookie = 0;
+static int count = 0;
 
 /********************************************************************************/
 /********************************************************************************/
@@ -44,7 +46,7 @@ int mydrv3_init_isr(struct miscdevice *device)
               mydrv3_isr,
               IRQF_TRIGGER_FALLING,
               MYDEV_NAME,
-              device);
+              &cookie);
 	if (ret_val != 0) {
 		pr_err("mydrv3: init: request_irq FAIL\n");
 		return ret_val;
@@ -65,7 +67,7 @@ void mydrv3_exit_isr(struct miscdevice *device)
               return;
        }
 
-       free_irq(irq, device);
+       free_irq(irq, &cookie);
 	pr_info("mydrv3: mydrv3_exit_isr  PASS\n");
 }
 
@@ -75,7 +77,10 @@ void mydrv3_exit_isr(struct miscdevice *device)
 
 irqreturn_t mydrv3_isr(int irq, void *data)
 {
-	if(prn) pr_info("mydrv3: interrupt received\n");
+       int* pdata = (int*)data;
+       count++;
+       (*pdata)++;
+	if(prn) pr_info("mydrv3: interrupt received %d %d\n", *pdata, count);
 	return IRQ_HANDLED;
 }
 
