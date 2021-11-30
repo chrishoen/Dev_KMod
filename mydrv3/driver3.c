@@ -7,6 +7,7 @@
 #include <linux/gpio.h>
 #include <linux/interrupt.h>
 
+#include "cmn3.h"
 #include "mydrv3.h"
 
 static int mydrv3_open(struct inode *inode, struct file *file)
@@ -40,6 +41,8 @@ static int __init mydrv3_init(void)
 	int ret_val;
 
 	pr_info("mydrv3: init****************************************\n");
+
+       mydrv3_init_cmn();
 
 	ret_val = mydrv3_init_gpio();
 	if (ret_val != 0) {
