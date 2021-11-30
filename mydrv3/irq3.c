@@ -25,7 +25,7 @@ static int count = 0;
 /********************************************************************************/
 /********************************************************************************/
 
-int mydrv3_init_isr(struct miscdevice *device)
+int mydrv3_init_isr(void)
 {
        int ret_val;
 
@@ -60,7 +60,7 @@ int mydrv3_init_isr(struct miscdevice *device)
 /********************************************************************************/
 /********************************************************************************/
 
-void mydrv3_exit_isr(struct miscdevice *device)
+void mydrv3_exit_isr(void)
 {
        if (irq < 0){
        	pr_info("mydrv3: mydrv3_exit_isr  NOP\n");

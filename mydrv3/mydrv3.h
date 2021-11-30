@@ -15,8 +15,8 @@ int mydrv3_init_gpio(void);
 void mydrv3_exit_gpio(void);
 void mydrv3_write_gpio_5(bool value);
 
-int mydrv3_init_isr(struct miscdevice *device);
-void mydrv3_exit_isr(struct miscdevice *device);
+int mydrv3_init_isr(void);
+void mydrv3_exit_isr(void);
 irqreturn_t mydrv3_isr(int irq, void *data);
 
 #endif

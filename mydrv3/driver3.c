@@ -56,7 +56,7 @@ static int __init mydrv3_init(void)
 	}
 	pr_info("mydrv3: my_miscdevice.minor %i\n",my_miscdevice.minor);
 
-	ret_val = mydrv3_init_isr(&my_miscdevice);
+	ret_val = mydrv3_init_isr();
 	if (ret_val != 0) {
 		pr_err("mydrv3: init: isr FAIL\n");
 		return ret_val;
@@ -70,7 +70,7 @@ static void __exit mydrv3_exit(void)
 {
 	pr_info("mydrv3: exit********************************\n");
 
-	mydrv3_exit_isr(&my_miscdevice);
+	mydrv3_exit_isr();
        mydrv3_exit_proc();
        mydrv3_exit_gpio();
 	misc_deregister(&my_miscdevice);
